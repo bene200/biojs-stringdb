@@ -8,8 +8,8 @@ var StringDB = function(db, access, format, request){
     this.request = request || "interactions";
 };
 
-StringDB.prototype.getNetwork = function(gene){
-    var url = 'http://' + this.db + '/' + 
+StringDB.prototype.getNetwork = function(gene, proxy){
+    var url = 'http://' +  proxy + this.db + '/' + 
             this.access + '/' +
             this.format + '/' +
             this.request + '?' + 
@@ -30,22 +30,24 @@ StringDB.prototype.networkToJSON = function(tsv){
     var nodes = [];
     for(var i=0; i<lines.length; i++){
         line = lines[i].split("\t");
-        edges.push({ source: line[2], target: line[3] });
-        if(contains.indexOf(line[2]) === -1){
-            nodes.push({ id: line[2], name: line[2] });
-            contains.push(line[2]);
+        if(line.length > 1){
+            edges.push({ source: line[2], target: line[3] });
+            
+            if(contains.indexOf(line[2]) === -1){
+                nodes.push({ id: line[2], name: line[2] });
+                contains.push(line[2]);
+            }
+            if(contains.indexOf(line[3]) === -1){
+                nodes.push({ id: line[3], name: line[3] });
+                contains.push(line[3]);
+            }
         }
-        if(contains.indexOf(line[3]) === -1){
-            nodes.push({ id: line[3], name: line[3] });
-            contains.push(line[3]);
+        else {
+            continue;
         }
     }
     return { nodes: nodes, edges: edges };
 };
 
 
-var str = new StringDB();
-str.getNetwork("ADE43091.1").
-then(function(re){
-    console.log(str.networkToJSON(re));    
-});
+module.exports = StringDB;
