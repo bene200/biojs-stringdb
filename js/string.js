@@ -2,27 +2,37 @@ var request = require('request');
 var Promise = require('promise');
 
 var StringDB = function(db, access, format, request){
+    //standard settings aim towards retrieving network info 
+    //for an identifier as tsv
     this.db = db || "string-db.org";
     this.access = access || "api";
     this.format = format || "psi-mi-tab";
     this.request = request || "interactions";
+
 };
 
 StringDB.prototype.getNetwork = function(gene, proxy){
+    //get the network info as specified by the instance variables
     var url = 'http://' +  proxy + this.db + '/' + 
             this.access + '/' +
             this.format + '/' +
             this.request + '?' + 
             'identifier=' + gene;
 
+    //returns a promise, not a callback
     return new Promise(function(resolve){
-        request(url, function(err, res, body){
-            resolve(body);
-        });
+        try {
+            request(url, function(err, res, body){
+                resolve(body);
+            });
+        } catch(err){
+            throw new Error("No STRINGdb entry for given identifier");
+        }
     });
 };
 
 StringDB.prototype.networkToJSON = function(tsv){
+    //converts the tsv string to a JSON object
     var lines = tsv.split("\n");
     var parts;
     var edges = [];
